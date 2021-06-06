@@ -28,3 +28,4 @@ repos:
         entry: lua-format --in-place --extra-sep-at-table-end
         language: system
         types: [file, lua]
+        exclude: sha1.lua
