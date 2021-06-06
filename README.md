@@ -39,17 +39,17 @@ A button converts text input to sound, then plays the sound.
   - a text input field
   - a process & preview button
   - an exit button.
-- [ ] Process & preview button interaction:
-  - [ ] Convert text to speech into a .wav file (using external executable)
+- [x] Process & preview button interaction:
+  - [x] Convert text to speech into a .wav file (using external executable)
   ```
   tts --text "Hi everyone, this is quite crazy!" --out_path output.wav
   ```
-  - [ ] Convert .wav file into .ogg file (using external executable)
+  - [x] Convert .wav file into .ogg file (using external executable)
   ```
   ffmpeg -i output.wav -acodec libvorbis output.ogg
   ```
-  - [ ] Register an audio asset
-  - [ ] Play registered audio asset
+  - [x] Register an audio asset
+  - [x] Preview registered audio asset
 
 ### Goal 3
 

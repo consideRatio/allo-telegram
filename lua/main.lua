@@ -72,9 +72,22 @@ function TelegramPopupView:_init(bounds, hand)
     self.grabbable = true
 
     -- Interaction logic
-    self.process = function() self:playSound(initial_assets.sound) end
+    self.process = function()
+        -- FIXME: This blocks the main thread, and the app is disconnected by
+        --        alloplace.
+        os.execute(
+            "rm -f generated_sounds/output.wav generated_sounds/output.ogg")
+        os.execute("tts --text '" .. self.input.label.text ..
+                       "' --out_path generated_sounds/output.wav")
+        os.execute(
+            "ffmpeg -i generated_sounds/output.wav -acodec libvorbis generated_sounds/output.ogg")
+    end
 
-    self.preview = function() self:playSound(initial_assets.sound) end
+    self.preview = function()
+        new_assets = {new = ui.Asset.File("generated_sounds/output.ogg")}
+        app.assetManager:add(new_assets)
+        self:playSound(new_assets.new)
+    end
 
     -- Input textfield
     self.input = self:addSubview(ui.TextField(ui.Bounds {
@@ -91,7 +104,7 @@ function TelegramPopupView:_init(bounds, hand)
                              ui.Button(ui.Bounds {
             size = ui.Size(self.bounds.size.width * 0.8, 0.1, 0.05),
         }))
-    self.processButton.label:setText("Process TTS")
+    self.processButton.label:setText("Update message")
     self.processButton.onActivated = self.process
 
     -- Preview button
