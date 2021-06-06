@@ -25,10 +25,10 @@ To start the app and connect it to an Alloplace for testing, run
 A button plays a fixed sound.
 
 - [x] UI: A play button.
-- [ ] Register fixed audio asset file.
-- [ ] Let the play button play a fixed audio asset.
-  - The Button component has an example
-  - `play_sound` is is part of the View class
+- [x] Register fixed audio asset file.
+- [x] Let the play button play a fixed audio asset.
+  - The Button component has [an example](https://github.com/alloverse/alloui-lua/blob/3bcc68810420dbdc1afecf681a59e484be86acbb/lua/alloui/views/button.lua#L86-L104)
+  - `playSound` is is part of the View class
 
 ### Goal 2
 

@@ -10,8 +10,9 @@ local app = App(client)
 -- in your app. They need to be published so that user's headsets can download them
 -- before you can use them. We make `assets` global so you can use it throughout your app.
 initial_assets = {
-    quit = ui.Asset.File("images/quit.png"),
-    checkmark = ui.Asset.File("images/checkmark.png"),
+    quit = ui.Asset.File("assets/images/quit.png"),
+    checkmark = ui.Asset.File("assets/images/checkmark.png"),
+    sound = ui.Asset.File("assets/sounds/pushing_my_buttons.ogg"),
 }
 app.assetManager:add(initial_assets)
 
@@ -31,7 +32,7 @@ function TelegramView:_init(bounds)
     }))
     self.playButton.label:setText("Play sound asset")
     self.playButton.onActivated = function(byEntity)
-        self:playSoundAsset(byEntity)
+        self:mainButtonInteraction(byEntity)
     end
 
     self:layout()
@@ -54,7 +55,9 @@ function TelegramView:layout()
     self:setBounds()
 end
 
-function TelegramView:playSoundAsset(byEntity) print("Test") end
+function TelegramView:mainButtonInteraction(byEntity)
+    self:playSound(initial_assets.sound)
+end
 
 app.mainView = TelegramView(ui.Bounds(0, 1.2, -2, 1, 0.5, 0.01))
 
