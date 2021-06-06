@@ -34,8 +34,8 @@ A button plays a fixed sound.
 
 A button converts text input to sound, then plays the sound.
 
-- [ ] UI: Make the play button create a popup
-- [ ] UI: A popup that includes:
+- [x] UI: Make the play button create a popup
+- [x] UI: A popup that includes:
   - a text input field
   - a process & preview button
   - an exit button.
