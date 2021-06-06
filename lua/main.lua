@@ -1,3 +1,5 @@
+require("sha1")
+
 -- a Client is used to connect this app to a Place. arg[2] is the URL of the place to
 -- connect to, which Assist sets up for you.
 local client = Client(arg[2], "allo-telegram")
@@ -5,6 +7,18 @@ local client = Client(arg[2], "allo-telegram")
 -- App manages the Client connection for you, and manages the lifetime of the
 -- your app.
 local app = App(client)
+
+-- https://stackoverflow.com/a/11130774
+function scandir(directory)
+    local i, t, popen = 0, {}, io.popen
+    local pfile = popen('ls -a "'..directory..'"')
+    for filename in pfile:lines() do
+        i = i + 1
+        t[i] = filename
+    end
+    pfile:close()
+    return t
+end
 
 -- Assets are files (images, glb models, videos, sounds, etc...) that you want to use
 -- in your app. They need to be published so that user's headsets can download them
@@ -59,6 +73,37 @@ function TelegramView:layout()
     self:setBounds()
 end
 
+
+class.TelegramWorldState()
+function TelegramWorldState:_init()
+    -- World state watcher
+    -- app ref: https://github.com/alloverse/alloui-lua/blob/main/lua/alloui/app.lua
+    -- delay, repeats, callback
+    app:scheduleAction(1.0, true, function() self:update() end)
+end
+
+function TelegramWorldState:update()
+    client.state.entities
+end
+
+class.TelegramAssetState()
+function TelegramAssetState:_init()
+    -- Asset watcher state watcher
+    app:scheduleAction(1.0, true, function() self:update() end)
+end
+
+function TelegramAssetState:update()
+    for i, filename in ipairs(scandir("generated_sounds/ogg")) do
+        if filename == "." or filename == ".." then
+        else
+            print(filename)
+        end
+    end
+end
+
+
+
+
 function TelegramView:showNewPopup(hand)
     local popup = TelegramPopupView(ui.Bounds {size = ui.Size(1, 0.5, 0.05)},
                                     hand)
@@ -73,18 +118,33 @@ function TelegramPopupView:_init(bounds, hand)
 
     -- Interaction logic
     self.process = function()
-        -- FIXME: This blocks the main thread, and the app is disconnected by
-        --        alloplace.
+        -- This function generates a .ogg file that is named as the hash of the
+        -- text.
+
+        text = self.input.label.text
+        filename = sha1(text)
         os.execute(
-            "rm -f generated_sounds/output.wav generated_sounds/output.ogg")
-        os.execute("tts --text '" .. self.input.label.text ..
-                       "' --out_path generated_sounds/output.wav")
-        os.execute(
-            "ffmpeg -i generated_sounds/output.wav -acodec libvorbis generated_sounds/output.ogg")
+            "rm -f generated_sounds/wav/" .. filename .. ".wav generated_sounds/ogg/" .. filename .. ".ogg "
+            ..
+            "&&"
+            ..
+            "tts --text '" .. text .. "' "
+            ..
+            "--out_path generated_sounds/wav/" .. filename .. ".wav "
+            ..
+            "&&"
+            ..
+            "ffmpeg -i generated_sounds/wav/" .. filename .. ".wav -acodec libvorbis generated_sounds/ogg/" .. filename .. ".ogg "
+            ..
+            "&"
+        )
     end
 
     self.preview = function()
-        new_assets = {new = ui.Asset.File("generated_sounds/output.ogg")}
+        text = self.input.label.text
+        filename = sha1(text)
+
+        new_assets = {new = ui.Asset.File("generated_sounds/ogg/" .. filename .. ".ogg")}
         app.assetManager:add(new_assets)
         self:playSound(new_assets.new)
     end
@@ -147,6 +207,9 @@ function TelegramPopupView:layout()
     self:setBounds()
 end
 
+-- Initialize world state watcher
+worldState = TelegramWorldState()
+assetState = TelegramAssetState()
 app.mainView = TelegramView(ui.Bounds(0, 1.2, -2, 1, 0.5, 0.01))
 
 -- Connect to the designated remote Place server

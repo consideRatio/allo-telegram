@@ -20,12 +20,12 @@ repos:
   # Dependencies:
   #   - luarocks install --server=https://luarocks.org/dev luaformatter
   #
-  - repo: local
-    hooks:
-      - id: lua-formatter
-        name: Lua Formatter
-        description: Formats Lua files using Lua Formatter.
-        entry: lua-format --in-place --extra-sep-at-table-end
-        language: system
-        types: [file, lua]
-        exclude: sha1.lua
+  # - repo: local
+  #   hooks:
+  #     - id: lua-formatter
+  #       name: Lua Formatter
+  #       description: Formats Lua files using Lua Formatter.
+  #       entry: lua-format --in-place --extra-sep-at-table-end
+  #       language: system
+  #       types: [file, lua]
+  #       exclude: sha1.lua
