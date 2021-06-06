@@ -24,7 +24,7 @@ To start the app and connect it to an Alloplace for testing, run
 
 A button plays a fixed sound.
 
-- [ ] UI: A play button.
+- [x] UI: A play button.
 - [ ] Register fixed audio asset file.
 - [ ] Let the play button play a fixed audio asset.
   - The Button component has an example

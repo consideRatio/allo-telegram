@@ -23,7 +23,7 @@ function TelegramView:_init(bounds)
     self.quitButton = self:addSubview(ui.Button(ui.Bounds {
         size = ui.Size(0.12, 0.12, 0.05),
     }))
-    self.quitButton:setDefaultTexture(assets.quit)
+    self.quitButton:setDefaultTexture(initial_assets.quit)
     self.quitButton.onActivated = function() app:quit() end
 
     self.playButton = self:addSubview(ui.Button(ui.Bounds {
@@ -55,6 +55,8 @@ function TelegramView:layout()
 end
 
 function TelegramView:playSoundAsset(byEntity) print("Test") end
+
+app.mainView = TelegramView(ui.Bounds(0, 1.2, -2, 1, 0.5, 0.01))
 
 -- Connect to the designated remote Place server
 app:connect()
