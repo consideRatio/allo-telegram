@@ -1,0 +1,30 @@
+# pre-commit is a tool to perform a predefined set of tasks manually and/or
+# automatically before git commits are made.
+#
+# Config reference: https://pre-commit.com/#pre-commit-configyaml---top-level
+#
+# Common tasks
+#
+# - Run on all files:   pre-commit run --all-files
+# - Register git hooks: pre-commit install --install-hooks
+#
+repos:
+  # Autoformat: markdown, yaml (but not helm templates)
+  - repo: https://github.com/pre-commit/mirrors-prettier
+    rev: v2.2.1
+    hooks:
+      - id: prettier
+
+  # Autoformat: lua
+  #
+  # Dependencies:
+  #   - luarocks install --server=https://luarocks.org/dev luaformatter
+  #
+  - repo: local
+    hooks:
+      - id: lua-formatter
+        name: Lua Formatter
+        description: Formats Lua files using Lua Formatter.
+        entry: lua-format --in-place --extra-sep-at-table-end
+        language: system
+        types: [file, lua]
