@@ -13,6 +13,7 @@ local app = App(client)
 -- Assets are files (images, glb models, videos, sounds, etc...) that you want to use
 -- in your app. They need to be published so that user's headsets can download them
 -- before you can use them. We make `assets` global so you can use it throughout your app.
+dynamic_assets = {}
 initial_assets = {
     -- Asset ref: https://github.com/alloverse/alloui-lua/blob/main/lua/alloui/asset/asset.lua
     quit = ui.Asset.File("assets/images/quit.png"),
@@ -79,9 +80,42 @@ end
 
 function TelegramWorldState:update()
     -- Entity ref: https://github.com/alloverse/alloui-lua/blob/main/lua/alloui/entity.lua
-    for k, v in pairs(client.state.entities) do
-        print(v)
+    -- for k, user in pairs(self.users) do
+    local current_users = {}
+
+    for k, entity in pairs(client.state.entities) do
+        if entity.components.visor then
+            display_name = entity.components.visor.display_name
+            user_arrived = false
+            current_users[k] = true
+
+            if (self.users[k] == nil) or (self.users[k] and self.users[k].active == false) then
+                user_arrived = true
+            end
+            self.users[k] = {
+                display_name = display_name,
+                active = true,
+            }
+            if user_arrived then
+                self:user_arrived(display_name, entity)
+            end
+        end
     end
+
+    for k, user in pairs(self.users) do
+        if current_users[k] == nil and user.active then
+            user.active = false
+            self:user_left(user.display_name, entity)
+        end
+    end
+end
+
+function TelegramWorldState:user_arrived(display_name, entity)
+    print("User arrived: " .. display_name)
+end
+
+function TelegramWorldState:user_left(display_name, entity)
+    print("User left: " .. display_name)
 end
 
 
@@ -98,6 +132,12 @@ function scandir(directory)
     return t
 end
 
+-- https://www.codegrepper.com/code-examples/typescript/how+to+check+if+file+exists+lua
+function asset_exists(filename)
+    local f=io.open("generated_sounds/ogg/" .. filename, "r")
+    if f~=nil then io.close(f) return true else return false end
+end
+
 class.TelegramAssetState()
 function TelegramAssetState:_init()
     -- Asset watcher state watcher
@@ -108,7 +148,10 @@ function TelegramAssetState:update()
     for i, filename in ipairs(scandir("generated_sounds/ogg")) do
         if filename == "." or filename == ".." then
         else
-            print(filename)
+            asset = ui.Asset.File("generated_sounds/ogg/" .. filename)
+            app.assetManager:add(asset)
+            filename_sha = filename:gsub("%.ogg", "")
+            dynamic_assets[filename_sha] = asset
         end
     end
 end
@@ -130,33 +173,40 @@ function TelegramPopupView:_init(bounds, hand)
     self.process = function()
         -- This function generates a .ogg file that is named as the hash of the
         -- text.
-
         text = self.input.label.text
-        filename = sha1(text)
-        os.execute(
-            "rm -f generated_sounds/wav/" .. filename .. ".wav generated_sounds/ogg/" .. filename .. ".ogg "
-            ..
-            "&&"
-            ..
-            "tts --text '" .. text .. "' "
-            ..
-            "--out_path generated_sounds/wav/" .. filename .. ".wav "
-            ..
-            "&&"
-            ..
-            "ffmpeg -i generated_sounds/wav/" .. filename .. ".wav -acodec libvorbis generated_sounds/ogg/" .. filename .. ".ogg "
-            ..
-            "&"
-        )
+        filename_sha = sha1(text)
+
+        if asset_exists(filename_sha .. ".ogg") then
+            print("asset already created")
+        else
+            os.execute(
+                "rm -f generated_sounds/wav/" .. filename_sha .. ".wav generated_sounds/ogg/" .. filename_sha .. ".ogg "
+                ..
+                "&&"
+                ..
+                "tts --text '" .. text .. "' "
+                ..
+                "--out_path generated_sounds/wav/" .. filename_sha .. ".wav "
+                ..
+                "&&"
+                ..
+                "ffmpeg -i generated_sounds/wav/" .. filename_sha .. ".wav -acodec libvorbis generated_sounds/ogg/" .. filename_sha .. ".ogg "
+                ..
+                "&"
+            )
+        end
     end
 
     self.preview = function()
         text = self.input.label.text
-        filename = sha1(text)
+        filename_sha = sha1(text)
+        asset = dynamic_assets[filename_sha]
 
-        new_assets = {new = ui.Asset.File("generated_sounds/ogg/" .. filename .. ".ogg")}
-        app.assetManager:add(new_assets)
-        self:playSound(new_assets.new)
+        if asset then
+            self:playSound(asset)
+        else
+            print("preview: asset not found, " .. filename_sha)
+        end
     end
 
     -- Input textfield

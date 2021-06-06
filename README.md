@@ -55,9 +55,9 @@ A button converts text input to sound, then plays the sound.
 
 Become aware about activities of the world entities that has an identity.
 
-- [ ] Repeatedly poll world state
+- [x] Repeatedly poll world state
   - App.schedule_action
-  - client.state.entities: any entity with identity is a human
+  - client.state.entities: any entity with identity/visor is a human
 - [ ] Let a function trigger on
   - [ ] a user joined
   - [ ] a user left
