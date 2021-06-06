@@ -8,17 +8,7 @@ local client = Client(arg[2], "allo-telegram")
 -- your app.
 local app = App(client)
 
--- https://stackoverflow.com/a/11130774
-function scandir(directory)
-    local i, t, popen = 0, {}, io.popen
-    local pfile = popen('ls -a "'..directory..'"')
-    for filename in pfile:lines() do
-        i = i + 1
-        t[i] = filename
-    end
-    pfile:close()
-    return t
-end
+
 
 -- Assets are files (images, glb models, videos, sounds, etc...) that you want to use
 -- in your app. They need to be published so that user's headsets can download them
@@ -31,6 +21,8 @@ initial_assets = {
 }
 -- assetManager ref: https://github.com/alloverse/alloui-lua/blob/main/lua/alloui/asset/asset_manager.lua
 app.assetManager:add(initial_assets)
+
+
 
 -- Surface ref: https://github.com/alloverse/alloui-lua/blob/main/lua/alloui/views/surface.lua
 -- View ref: https://github.com/alloverse/alloui-lua/blob/main/lua/alloui/views/view.lua
@@ -74,16 +66,36 @@ function TelegramView:layout()
 end
 
 
+
 class.TelegramWorldState()
 function TelegramWorldState:_init()
     -- World state watcher
     -- app ref: https://github.com/alloverse/alloui-lua/blob/main/lua/alloui/app.lua
     -- delay, repeats, callback
     app:scheduleAction(1.0, true, function() self:update() end)
+
+    self.users = {}
 end
 
 function TelegramWorldState:update()
-    client.state.entities
+    -- Entity ref: https://github.com/alloverse/alloui-lua/blob/main/lua/alloui/entity.lua
+    for k, v in pairs(client.state.entities) do
+        print(v)
+    end
+end
+
+
+
+-- https://stackoverflow.com/a/11130774
+function scandir(directory)
+    local i, t, popen = 0, {}, io.popen
+    local pfile = popen('ls -a "'..directory..'"')
+    for filename in pfile:lines() do
+        i = i + 1
+        t[i] = filename
+    end
+    pfile:close()
+    return t
 end
 
 class.TelegramAssetState()
@@ -105,9 +117,7 @@ end
 
 
 function TelegramView:showNewPopup(hand)
-    local popup = TelegramPopupView(ui.Bounds {size = ui.Size(1, 0.5, 0.05)},
-                                    hand)
-
+    local popup = TelegramPopupView(ui.Bounds {size = ui.Size(1, 0.5, 0.05)}, hand)
     app:openPopupNearHand(popup, hand)
 end
 
@@ -160,18 +170,16 @@ function TelegramPopupView:_init(bounds, hand)
     self.input:askToFocus(hand)
 
     -- Process button
-    self.processButton = self:addSubview(
-                             ui.Button(ui.Bounds {
-            size = ui.Size(self.bounds.size.width * 0.8, 0.1, 0.05),
-        }))
+    self.processButton = self:addSubview(ui.Button(ui.Bounds {
+        size = ui.Size(self.bounds.size.width * 0.8, 0.1, 0.05),
+    }))
     self.processButton.label:setText("Update message")
     self.processButton.onActivated = self.process
 
     -- Preview button
-    self.previewButton = self:addSubview(
-                             ui.Button(ui.Bounds {
-            size = ui.Size(self.bounds.size.width * 0.8, 0.1, 0.05),
-        }))
+    self.previewButton = self:addSubview(ui.Button(ui.Bounds {
+        size = ui.Size(self.bounds.size.width * 0.8, 0.1, 0.05),
+    }))
     self.previewButton:setColor({0.0, 1.0, 0, 1.0})
     self.previewButton.label:setText("Preview")
     self.previewButton.onActivated = self.preview
@@ -206,6 +214,8 @@ function TelegramPopupView:layout()
     self.bounds.size.height = height
     self:setBounds()
 end
+
+
 
 -- Initialize world state watcher
 worldState = TelegramWorldState()
